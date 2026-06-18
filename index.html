@@ -342,6 +342,47 @@
                 </div>
             </section>
 
+            <!-- GAMIFICATION LEVELS & BADGES SECTION -->
+            <section class="badges-section glass-card" aria-labelledby="badges-title">
+                <h2 id="badges-title">🏆 Eco Level & Badges</h2>
+                
+                <div class="level-progress-card">
+                    <div class="level-header">
+                        <span class="level-title" id="lbl-level-name">Level 1: Eco Starter</span>
+                        <span class="level-xp-value" id="lbl-level-xp">0 / 200 XP</span>
+                    </div>
+                    <div class="comp-bar-bg" style="height: 12px; margin-top: 0.5rem; border-radius: 6px;">
+                        <div class="comp-bar-fill color-you" id="level-progress-bar" style="width: 0%" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"></div>
+                    </div>
+                </div>
+
+                <div class="badges-grid-container" style="margin-top: 1.5rem;">
+                    <h3>Achievement Badges</h3>
+                    <div class="badges-grid" id="badges-grid-list">
+                        <div class="badge-item locked" id="badge-eco-starter" title="Unlock: Log your first week">
+                            <span class="badge-icon">🌱</span>
+                            <span class="badge-label">Eco Starter</span>
+                        </div>
+                        <div class="badge-item locked" id="badge-transit-hero" title="Unlock: Keep driving distance below 50km/week">
+                            <span class="badge-icon">🚲</span>
+                            <span class="badge-label">Transit Hero</span>
+                        </div>
+                        <div class="badge-item locked" id="badge-veggie-master" title="Unlock: Reduce meat meals to 0">
+                            <span class="badge-icon">🥗</span>
+                            <span class="badge-label">Veggie Master</span>
+                        </div>
+                        <div class="badge-item locked" id="badge-power-saver" title="Unlock: Reduce monthly electricity below 150 kWh">
+                            <span class="badge-icon">🔌</span>
+                            <span class="badge-label">Power Saver</span>
+                        </div>
+                        <div class="badge-item locked" id="badge-streak-master" title="Unlock: Maintain a 5-day active streak">
+                            <span class="badge-icon">🔥</span>
+                            <span class="badge-label">Streak Master</span>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
             <!-- RECOMMENDED ACTIONS SECTION -->
             <section class="actions-section glass-card" aria-labelledby="actions-title">
                 <h2 id="actions-title">Personalized Actions</h2>
@@ -350,67 +391,11 @@
                 </div>
             </section>
 
-            <!-- DAILY CHALLENGES SECTION -->
+            <!-- DAILY CHALLENGES SECTION (GENERATED DYNAMICALLY) -->
             <section class="challenges-section glass-card" aria-labelledby="challenges-title">
                 <h2 id="challenges-title">Daily Challenges</h2>
-                <div class="challenges-grid">
-                    
-                    <div class="challenge-card" id="challenge-1">
-                        <label class="challenge-label">
-                            <input type="checkbox" class="challenge-checkbox" data-id="1">
-                            <span class="checkbox-custom"></span>
-                            <div class="challenge-content">
-                                <span class="challenge-icon" aria-hidden="true">🚶</span>
-                                <div class="challenge-text">
-                                    <h4>Walk instead of driving</h4>
-                                    <p>Leave the car keys behind for trips under 2km.</p>
-                                </div>
-                            </div>
-                        </label>
-                    </div>
-
-                    <div class="challenge-card" id="challenge-2">
-                        <label class="challenge-label">
-                            <input type="checkbox" class="challenge-checkbox" data-id="2">
-                            <span class="checkbox-custom"></span>
-                            <div class="challenge-content">
-                                <span class="challenge-icon" aria-hidden="true">🥕</span>
-                                <div class="challenge-text">
-                                    <h4>Meat-free Monday</h4>
-                                    <p>Enjoy plant-based foods for all meals today.</p>
-                                </div>
-                            </div>
-                        </label>
-                    </div>
-
-                    <div class="challenge-card" id="challenge-3">
-                        <label class="challenge-label">
-                            <input type="checkbox" class="challenge-checkbox" data-id="3">
-                            <span class="checkbox-custom"></span>
-                            <div class="challenge-content">
-                                <span class="challenge-icon" aria-hidden="true">🔌</span>
-                                <div class="challenge-text">
-                                    <h4>Turn off standby devices</h4>
-                                    <p>Unplug chargers and appliances not in use.</p>
-                                </div>
-                            </div>
-                        </label>
-                    </div>
-
-                    <div class="challenge-card" id="challenge-4">
-                        <label class="challenge-label">
-                            <input type="checkbox" class="challenge-checkbox" data-id="4">
-                            <span class="checkbox-custom"></span>
-                            <div class="challenge-content">
-                                <span class="challenge-icon" aria-hidden="true">🥤</span>
-                                <div class="challenge-text">
-                                    <h4>Use a reusable bottle</h4>
-                                    <p>Avoid single-use plastics throughout the day.</p>
-                                </div>
-                            </div>
-                        </label>
-                    </div>
-
+                <div class="challenges-grid" id="challenges-container">
+                    <!-- Dynamic challenge cards are injected here based on category -->
                 </div>
             </section>
 
@@ -445,7 +430,7 @@
                 </div>
             </section>
 
-            <!-- AI ECO COACH SECTION -->
+            <!-- AI ECO COACH -->
             <section class="ai-coach-section glass-card" aria-labelledby="ai-coach-title">
                 <h2 id="ai-coach-title">🤖 AI Eco Coach</h2>
                 <p class="coach-desc">Get tailored strategies powered by AI, analyzing your current transportation, diet, and energy metrics instantly.</p>
@@ -478,6 +463,37 @@
         <footer class="footer-section">
             <p>Made with 💚 for the planet. Stay green!</p>
         </footer>
+    </div>
+
+    <!-- WEEKLY SUMMARY POPUP MODAL -->
+    <div class="modal-overlay hidden" id="summary-modal" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+        <div class="modal-content glass-card">
+            <h2 id="modal-title">🎉 Weekly Snapshot Saved!</h2>
+            <div class="modal-body">
+                <p>Emissions successfully logged to your local journal. Here are your achievements:</p>
+                <div class="modal-stats-grid">
+                    <div class="modal-stat-card">
+                        <span class="modal-stat-lbl">XP Earned</span>
+                        <span class="modal-stat-val" style="color: var(--accent-green);">+100 XP</span>
+                    </div>
+                    <div class="modal-stat-card">
+                        <span class="modal-stat-lbl">Footprint Logged</span>
+                        <span class="modal-stat-val"><span id="modal-val-co2">0.0</span> kg</span>
+                    </div>
+                    <div class="modal-stat-card">
+                        <span class="modal-stat-lbl">Active Streak</span>
+                        <span class="modal-stat-val" id="modal-val-streak">3 days</span>
+                    </div>
+                </div>
+                <div class="unlocked-badges-banner hidden" id="modal-badges-banner">
+                    <h4>🏆 New Badges Unlocked!</h4>
+                    <div class="badges-grid" id="modal-badges-grid" style="margin-top: 0.5rem; justify-content: center;"></div>
+                </div>
+            </div>
+            <div class="modal-actions" style="margin-top: 2rem; display: flex; justify-content: center;">
+                <button class="btn btn-primary" id="btn-close-modal">Awesome, Keep Going!</button>
+            </div>
+        </div>
     </div>
 
     <script src="app.js"></script>
