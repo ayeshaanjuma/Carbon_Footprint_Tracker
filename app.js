@@ -10,7 +10,11 @@ document.addEventListener('DOMContentLoaded', () => {
         completedChallenges: [], // Array of string IDs
         streak: 3,
         longestStreak: 7,
-        totalCompleted: 12
+        totalCompleted: 12,
+        
+        // Progress goals
+        weeklyTarget: 50,
+        history: [] // array of { date: string, co2: number, score: number }
     };
 
     let state = { ...defaultState };
@@ -23,7 +27,8 @@ document.addEventListener('DOMContentLoaded', () => {
             meat: document.getElementById('slider-meat'),
             foodWaste: document.getElementById('slider-foodwaste'),
             electricity: document.getElementById('slider-electricity'),
-            heating: document.getElementById('select-heating')
+            heating: document.getElementById('select-heating'),
+            target: document.getElementById('slider-target')
         },
         displays: {
             valDriving: document.getElementById('val-driving'),
@@ -31,6 +36,7 @@ document.addEventListener('DOMContentLoaded', () => {
             valMeat: document.getElementById('val-meat'),
             valFoodWasteLabel: document.getElementById('val-foodwaste-label'),
             valElectricity: document.getElementById('val-electricity'),
+            valTarget: document.getElementById('val-target'),
             
             impactDriving: document.getElementById('impact-driving'),
             impactFlights: document.getElementById('impact-flights'),
@@ -62,16 +68,33 @@ document.addEventListener('DOMContentLoaded', () => {
             
             currStreak: document.getElementById('curr-streak'),
             maxStreak: document.getElementById('max-streak'),
-            totalCompleted: document.getElementById('total-completed')
+            totalCompleted: document.getElementById('total-completed'),
+            
+            // Goals and progress indicators
+            goalStatusText: document.getElementById('goal-status-text'),
+            goalProgressBar: document.getElementById('goal-progress-bar'),
+            statSavedCo2: document.getElementById('stat-saved-co2'),
+            statImprovementPct: document.getElementById('stat-improvement-pct'),
+            lastLogTime: document.getElementById('last-log-time')
         },
         buttons: {
             generatePlan: document.getElementById('btn-generate-plan'),
-            askCoach: document.getElementById('btn-ask-coach')
+            askCoach: document.getElementById('btn-ask-coach'),
+            logWeek: document.getElementById('btn-log-week'),
+            resetHistory: document.getElementById('btn-reset-history')
         },
         coach: {
             askInput: document.getElementById('coach-ask-input'),
             responseBox: document.getElementById('coach-response'),
             responseText: document.getElementById('coach-response-text')
+        },
+        chart: {
+            svg: document.getElementById('trend-chart'),
+            area: document.getElementById('chart-area'),
+            line: document.getElementById('chart-line'),
+            dots: document.getElementById('chart-dots'),
+            grid: document.getElementById('chart-grid-lines'),
+            emptyMsg: document.getElementById('chart-empty-msg')
         },
         accordionTriggers: document.querySelectorAll('.accordion-trigger'),
         challengeCheckboxes: document.querySelectorAll('.challenge-checkbox'),
@@ -173,6 +196,7 @@ document.addEventListener('DOMContentLoaded', () => {
         dom.displays.valDriving.textContent = state.driving;
         dom.displays.valFlights.textContent = state.flights;
         dom.displays.valMeat.textContent = state.meat;
+        dom.displays.valTarget.textContent = state.weeklyTarget;
         
         const wasteLabels = ['Low', 'Medium', 'High'];
         dom.displays.valFoodWasteLabel.textContent = wasteLabels[state.foodWaste];
@@ -185,6 +209,7 @@ document.addEventListener('DOMContentLoaded', () => {
         dom.sliders.foodWaste.value = state.foodWaste;
         dom.sliders.electricity.value = state.electricity;
         dom.sliders.heating.value = state.heating;
+        dom.sliders.target.value = state.weeklyTarget;
 
         // 3. Update specific calculations displays
         dom.displays.impactDriving.textContent = `${(state.driving * CO2_FACTORS.driving).toFixed(1)} kg CO₂e`;
@@ -277,17 +302,145 @@ document.addEventListener('DOMContentLoaded', () => {
             
             const card = checkbox.closest('.challenge-card');
             if (checkbox.checked) {
-                card.classList.add('completed-state'); // Styled state indicator if needed
+                card.classList.add('completed-state');
             } else {
                 card.classList.remove('completed-state');
             }
         });
 
-        // 10. Actions & recommendations
+        // 10. Goals Status & Progress Cards
+        let goalProgressPct = 0;
+        if (impacts.total <= state.weeklyTarget) {
+            dom.displays.goalStatusText.textContent = 'Met Target';
+            dom.displays.goalStatusText.className = 'goal-status-badge score-green';
+            goalProgressPct = 100;
+        } else {
+            const diff = impacts.total - state.weeklyTarget;
+            if (diff <= state.weeklyTarget * 0.25) {
+                dom.displays.goalStatusText.textContent = 'Near Goal';
+                dom.displays.goalStatusText.className = 'goal-status-badge score-yellow';
+            } else {
+                dom.displays.goalStatusText.textContent = 'Above Target';
+                dom.displays.goalStatusText.className = 'goal-status-badge score-red';
+            }
+            goalProgressPct = Math.max(5, Math.round((state.weeklyTarget / impacts.total) * 100));
+        }
+        dom.displays.goalProgressBar.style.width = `${goalProgressPct}%`;
+        dom.displays.goalProgressBar.setAttribute('aria-valuenow', goalProgressPct);
+
+        // 11. Calculate Historical stats
+        calculateHistoricalStats(impacts.total);
+
+        // 12. Render Trend Graph
+        renderTrendChart();
+
+        // 13. Actions & recommendations
         updateRecommendations(impacts.transport, impacts.diet, impacts.energy);
         
         // Save current parameters to LocalStorage
         saveState();
+    }
+
+    // --- HISTORICAL STATS ---
+    function calculateHistoricalStats(currentWeeklyCo2) {
+        if (!state.history || state.history.length === 0) {
+            dom.displays.statSavedCo2.textContent = '0.0 kg';
+            dom.displays.statImprovementPct.textContent = '0.0%';
+            dom.displays.lastLogTime.textContent = '';
+            return;
+        }
+
+        const firstLog = state.history[0];
+        const lastLog = state.history[state.history.length - 1];
+
+        // Total saved is the aggregate difference between first recorded week and subsequent weeks
+        let totalSaved = 0;
+        state.history.forEach(log => {
+            totalSaved += (firstLog.co2 - log.co2);
+        });
+
+        // Percentage improvement compared to first week
+        let improvementPct = 0;
+        if (firstLog.co2 > 0) {
+            improvementPct = ((firstLog.co2 - currentWeeklyCo2) / firstLog.co2) * 100;
+        }
+
+        dom.displays.statSavedCo2.textContent = `${totalSaved.toFixed(1)} kg`;
+        dom.displays.statImprovementPct.textContent = `${improvementPct.toFixed(1)}%`;
+        dom.displays.lastLogTime.textContent = `Last entry: ${lastLog.date}`;
+    }
+
+    // --- RENDER TREND CHART (SVG) ---
+    function renderTrendChart() {
+        const history = state.history || [];
+        
+        if (history.length === 0) {
+            dom.chart.emptyMsg.classList.remove('hidden');
+            dom.chart.line.setAttribute('d', '');
+            dom.chart.area.setAttribute('d', 'M 0 200 L 500 200 Z');
+            dom.chart.dots.innerHTML = '';
+            dom.chart.grid.innerHTML = '';
+            return;
+        }
+
+        dom.chart.emptyMsg.classList.add('hidden');
+
+        const pointsCount = history.length;
+        const width = 500;
+        const height = 200;
+        const paddingLeft = 35;
+        const paddingRight = 35;
+        const paddingTop = 30;
+        const paddingBottom = 40;
+
+        const maxCo2 = Math.max(...history.map(h => h.co2), state.weeklyTarget, 80);
+        const minCo2 = Math.max(0, Math.min(...history.map(h => h.co2), state.weeklyTarget) - 10);
+        const co2Range = maxCo2 - minCo2 || 20;
+
+        // Calculate visual screen coordinates
+        const coords = [];
+        history.forEach((log, index) => {
+            let x = 250;
+            if (pointsCount > 1) {
+                x = paddingLeft + (index / (pointsCount - 1)) * (width - paddingLeft - paddingRight);
+            }
+            const y = height - paddingBottom - ((log.co2 - minCo2) / co2Range) * (height - paddingTop - paddingBottom);
+            coords.push({ x, y, val: log.co2, date: log.date });
+        });
+
+        // Create Grid Lines
+        let gridLinesHtml = '';
+        // Horizontal Target line
+        const targetY = height - paddingBottom - ((state.weeklyTarget - minCo2) / co2Range) * (height - paddingTop - paddingBottom);
+        if (targetY >= paddingTop && targetY <= (height - paddingBottom)) {
+            gridLinesHtml += `
+                <line x1="0" y1="${targetY}" x2="${width}" y2="${targetY}" stroke="rgba(245, 158, 11, 0.4)" stroke-dasharray="4 4" stroke-width="1.5"></line>
+                <text x="5" y="${targetY - 5}" fill="rgba(245, 158, 11, 0.8)" font-size="9">Target (${state.weeklyTarget} kg)</text>
+            `;
+        }
+        dom.chart.grid.innerHTML = gridLinesHtml;
+
+        // Make Path string
+        let linePath = `M ${coords[0].x} ${coords[0].y}`;
+        for (let i = 1; i < coords.length; i++) {
+            linePath += ` L ${coords[i].x} ${coords[i].y}`;
+        }
+        dom.chart.line.setAttribute('d', linePath);
+
+        // Make Gradient Area string
+        const areaPath = `${linePath} L ${coords[coords.length - 1].x} ${height - paddingBottom} L ${coords[0].x} ${height - paddingBottom} Z`;
+        dom.chart.area.setAttribute('d', areaPath);
+
+        // Render Dots, values and labels
+        let dotsHtml = '';
+        coords.forEach((c) => {
+            dotsHtml += `
+                <circle cx="${c.x}" cy="${c.y}" r="5" fill="var(--accent-green)" stroke="#070d0a" stroke-width="2.5"></circle>
+                <text x="${c.x}" y="${c.y - 10}" fill="var(--text-primary)" font-size="10" font-weight="700" text-anchor="middle">${c.val.toFixed(0)}</text>
+                <text x="${c.x}" y="${height - 15}" fill="var(--text-muted)" font-size="9" text-anchor="middle">${c.date}</text>
+            `;
+        });
+        dom.chart.dots.innerHTML = dotsHtml;
     }
 
     // --- RECOMMENDATIONS ---
@@ -324,7 +477,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const selectedActions = recommendations[highestCategory];
         
-        // Simple DOM optimization: only recreate actions grid content if category shifts or is initial
         const currentCategoryAttr = dom.displays.actionsContainer.getAttribute('data-category');
         if (currentCategoryAttr !== highestCategory) {
             dom.displays.actionsContainer.setAttribute('data-category', highestCategory);
@@ -349,6 +501,37 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         }
     }
+
+    // --- LOG CURRENT WEEK ACTION ---
+    dom.buttons.logWeek.addEventListener('click', () => {
+        const impacts = calculateImpacts();
+        const now = new Date();
+        const dateStr = now.toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
+
+        if (!state.history) {
+            state.history = [];
+        }
+
+        state.history.push({
+            date: dateStr,
+            co2: impacts.total,
+            score: impacts.score
+        });
+
+        // Limit log array to the last 10 entries for visualization aesthetic
+        if (state.history.length > 10) {
+            state.history.shift();
+        }
+
+        requestRender();
+    });
+
+    dom.buttons.resetHistory.addEventListener('click', () => {
+        if (confirm('Are you sure you want to reset your logged progress history?')) {
+            state.history = [];
+            requestRender();
+        }
+    });
 
     // --- DAILY CHALLENGES EVENT LISTENER ---
     dom.challengeCheckboxes.forEach(checkbox => {
@@ -398,6 +581,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
     dom.sliders.heating.addEventListener('change', (e) => {
         state.heating = e.target.value;
+        requestRender();
+    });
+
+    dom.sliders.target.addEventListener('input', (e) => {
+        state.weeklyTarget = Number(e.target.value);
         requestRender();
     });
 

@@ -276,6 +276,72 @@
                 </div>
             </section>
 
+            <!-- PROGRESS & GOALS SECTION -->
+            <section class="progress-section glass-card" aria-labelledby="progress-title">
+                <h2 id="progress-title">📈 Your Progress & Goals</h2>
+                
+                <div class="progress-goals-grid">
+                    <!-- Target Setting Card -->
+                    <div class="goal-setting-card">
+                        <div class="input-header">
+                            <label for="slider-target">Weekly Target Goal</label>
+                            <span class="value-display"><span id="val-target">50</span> kg CO₂e</span>
+                        </div>
+                        <div class="slider-wrapper">
+                            <input type="range" id="slider-target" min="10" max="150" value="50" class="custom-slider">
+                        </div>
+                        <div class="goal-status-wrapper">
+                            <span>Goal Status:</span>
+                            <span class="goal-status-badge" id="goal-status-text">On Track</span>
+                        </div>
+                        <div class="comp-bar-bg" style="margin-top: 0.75rem;">
+                            <div class="comp-bar-fill color-you" id="goal-progress-bar" style="width: 0%" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"></div>
+                        </div>
+                    </div>
+
+                    <!-- Progress Stats -->
+                    <div class="progress-stats-container">
+                        <div class="insight-stat-card">
+                            <span class="insight-stat-label">Total CO₂ Saved</span>
+                            <div class="insight-stat-value" id="stat-saved-co2">0.0 kg</div>
+                        </div>
+                        <div class="insight-stat-card">
+                            <span class="insight-stat-label">Improvement Rate</span>
+                            <div class="insight-stat-value" id="stat-improvement-pct">0.0%</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Trend Chart -->
+                <div class="chart-wrapper trend-chart-wrapper" style="margin-top: 2rem; width: 100%;">
+                    <h3>Carbon Trend Over Time</h3>
+                    <div class="trend-chart-container">
+                        <!-- Dynamic SVG Line Chart -->
+                        <svg id="trend-chart" width="100%" height="100%" viewBox="0 0 500 200" preserveAspectRatio="none" style="display: block; overflow: visible;">
+                            <defs>
+                                <linearGradient id="chart-grad" x1="0" y1="0" x2="0" y2="1">
+                                    <stop offset="0%" stop-color="var(--accent-green)" stop-opacity="0.3"></stop>
+                                    <stop offset="100%" stop-color="var(--accent-green)" stop-opacity="0.0"></stop>
+                                </linearGradient>
+                            </defs>
+                            <g id="chart-grid-lines" stroke="rgba(255,255,255,0.04)" stroke-width="1"></g>
+                            <path id="chart-area" fill="url(#chart-grad)" d="M 0 200 L 500 200 Z"></path>
+                            <path id="chart-line" fill="none" stroke="var(--accent-green)" stroke-width="3" d=""></path>
+                            <g id="chart-dots"></g>
+                        </svg>
+                        <div id="chart-empty-msg" class="chart-overlay-msg">No entries logged yet. Log current week below to start tracking.</div>
+                    </div>
+                </div>
+
+                <div class="progress-actions">
+                    <span class="text-secondary" style="font-size: 0.85rem;" id="last-log-time"></span>
+                    <div style="display: flex; gap: 0.75rem;">
+                        <button class="btn btn-primary" id="btn-log-week">Log Current Week</button>
+                        <button class="btn btn-secondary" id="btn-reset-history" style="background: rgba(239, 68, 68, 0.08); border-color: rgba(239, 68, 68, 0.2); color: var(--score-high);">Reset History</button>
+                    </div>
+                </div>
+            </section>
+
             <!-- RECOMMENDED ACTIONS SECTION -->
             <section class="actions-section glass-card" aria-labelledby="actions-title">
                 <h2 id="actions-title">Personalized Actions</h2>
@@ -379,7 +445,7 @@
                 </div>
             </section>
 
-            <!-- AI ECO COACH -->
+            <!-- AI ECO COACH SECTION -->
             <section class="ai-coach-section glass-card" aria-labelledby="ai-coach-title">
                 <h2 id="ai-coach-title">🤖 AI Eco Coach</h2>
                 <p class="coach-desc">Get tailored strategies powered by AI, analyzing your current transportation, diet, and energy metrics instantly.</p>
