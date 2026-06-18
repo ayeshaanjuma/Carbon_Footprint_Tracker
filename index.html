@@ -1,0 +1,419 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Carbon Footprint Tracker | Build a Greener Future</title>
+    <meta name="description" content="Track your daily carbon footprint, analyze your habits, and get personalized AI coaching to build a greener future.">
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="index.css">
+</head>
+<body>
+    <div class="glow-bg"></div>
+    <div class="dashboard-container">
+        
+        <!-- HERO SECTION -->
+        <header class="hero-section">
+            <div class="hero-brand">
+                <span class="hero-logo">🌱</span>
+                <h1>Carbon Footprint Tracker</h1>
+            </div>
+            <p class="hero-tagline">Track your habits. Understand your impact. Build a greener future.</p>
+            
+            <div class="hero-summary-grid">
+                <!-- Weekly Carbon Card -->
+                <div class="summary-card glass-card">
+                    <div class="card-icon-wrapper blue-accent">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-6 h-6" style="width: 24px; height: 24px;">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 3v1.5M12 18.5V20M4.22 4.22l1.06 1.06M17.72 17.72l1.06 1.06M3 12h1.5M18.5 12H20M4.22 19.78l1.06-1.06M17.72 6.28l1.06-1.06M15.5 12a3.5 3.5 0 1 1-7 0 3.5 3.5 0 0 1 7 0Z" />
+                        </svg>
+                    </div>
+                    <div class="summary-details">
+                        <span class="summary-label">Weekly Carbon Footprint</span>
+                        <div class="summary-value"><span id="weekly-co2-val">0.0</span> <span class="unit">kg CO₂e</span></div>
+                    </div>
+                </div>
+
+                <!-- Carbon Score Card -->
+                <div class="summary-card glass-card" id="score-card">
+                    <div class="card-icon-wrapper" id="score-icon-wrapper">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-6 h-6" style="width: 24px; height: 24px;">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75 11.25 15 15 9.75M21 12c0 1.268-.63 2.39-1.593 3.068a3.745 3.745 0 0 1-1.043 3.296 3.745 3.745 0 0 1-3.296 1.043A3.745 3.745 0 0 1 12 21c-1.268 0-2.39-.63-3.068-1.593a3.746 3.746 0 0 1-3.296-1.043 3.745 3.745 0 0 1-1.043-3.296A3.745 3.745 0 0 1 3 12c0-1.268.63-2.39 1.593-3.068a3.745 3.745 0 0 1 1.043-3.296 3.746 3.746 0 0 1 3.296-1.043A3.746 3.746 0 0 1 12 3c1.268 0 2.39.63 3.068 1.593a3.746 3.746 0 0 1 3.296 1.043 3.746 3.746 0 0 1 1.043 3.296A3.745 3.745 0 0 1 21 12Z" />
+                        </svg>
+                    </div>
+                    <div class="summary-details">
+                        <span class="summary-label">Carbon Score</span>
+                        <div class="summary-value"><span id="carbon-score-val">100</span><span class="score-status" id="score-status-text">Low</span></div>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <!-- MAIN LAYOUT -->
+        <main class="main-content">
+            
+            <!-- TRACK YOUR HABITS SECTION -->
+            <section class="habit-tracker-section glass-card" aria-labelledby="track-habits-title">
+                <h2 id="track-habits-title">Track Your Habits</h2>
+                
+                <div class="accordion-container">
+                    
+                    <!-- Transport Group -->
+                    <div class="accordion-item expanded" id="acc-transport">
+                        <button class="accordion-trigger" aria-expanded="true" aria-controls="acc-content-transport">
+                            <span class="trigger-title">
+                                <span class="sec-icon">🚗</span> Transport
+                            </span>
+                            <span class="chevron"></span>
+                        </button>
+                        <div class="accordion-content" id="acc-content-transport" role="region">
+                            <div class="input-group">
+                                <div class="input-header">
+                                    <label for="slider-driving">Weekly Driving Distance</label>
+                                    <span class="value-display"><span id="val-driving">150</span> km</span>
+                                </div>
+                                <div class="slider-wrapper">
+                                    <input type="range" id="slider-driving" min="0" max="600" value="150" class="custom-slider">
+                                </div>
+                                <div class="impact-display">
+                                    <span>Estimated Impact:</span>
+                                    <span class="impact-val" id="impact-driving">0.0 kg CO₂e</span>
+                                </div>
+                            </div>
+
+                            <div class="input-group">
+                                <div class="input-header">
+                                    <label for="slider-flights">Flights per Year</label>
+                                    <span class="value-display"><span id="val-flights">2</span> flights</span>
+                                </div>
+                                <div class="slider-wrapper">
+                                    <input type="range" id="slider-flights" min="0" max="15" value="2" class="custom-slider">
+                                </div>
+                                <div class="impact-display">
+                                    <span>Estimated Impact:</span>
+                                    <span class="impact-val" id="impact-flights">0.0 kg CO₂e</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Diet Group -->
+                    <div class="accordion-item" id="acc-diet">
+                        <button class="accordion-trigger" aria-expanded="false" aria-controls="acc-content-diet">
+                            <span class="trigger-title">
+                                <span class="sec-icon">🥗</span> Diet
+                            </span>
+                            <span class="chevron"></span>
+                        </button>
+                        <div class="accordion-content" id="acc-content-diet" role="region">
+                            <div class="input-group">
+                                <div class="input-header">
+                                    <label for="slider-meat">Meat Meals per Week</label>
+                                    <span class="value-display"><span id="val-meat">5</span> meals</span>
+                                </div>
+                                <div class="slider-wrapper">
+                                    <input type="range" id="slider-meat" min="0" max="21" value="5" class="custom-slider">
+                                </div>
+                                <div class="impact-display">
+                                    <span>Estimated Impact:</span>
+                                    <span class="impact-val" id="impact-meat">0.0 kg CO₂e</span>
+                                </div>
+                            </div>
+
+                            <div class="input-group">
+                                <div class="input-header">
+                                    <label for="slider-foodwaste">Food Waste Level</label>
+                                    <span class="value-display" id="val-foodwaste-label">Medium</span>
+                                </div>
+                                <div class="slider-wrapper">
+                                    <input type="range" id="slider-foodwaste" min="0" max="2" value="1" class="custom-slider">
+                                </div>
+                                <div class="impact-display">
+                                    <span>Estimated Impact:</span>
+                                    <span class="impact-val" id="impact-foodwaste">0.0 kg CO₂e</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Home Energy Group -->
+                    <div class="accordion-item" id="acc-energy">
+                        <button class="accordion-trigger" aria-expanded="false" aria-controls="acc-content-energy">
+                            <span class="trigger-title">
+                                <span class="sec-icon">⚡</span> Home Energy
+                            </span>
+                            <span class="chevron"></span>
+                        </button>
+                        <div class="accordion-content" id="acc-content-energy" role="region">
+                            <div class="input-group">
+                                <div class="input-header">
+                                    <label for="slider-electricity">Monthly Electricity Usage</label>
+                                    <span class="value-display"><span id="val-electricity">250</span> kWh</span>
+                                </div>
+                                <div class="slider-wrapper">
+                                    <input type="range" id="slider-electricity" min="0" max="800" value="250" class="custom-slider">
+                                </div>
+                                <div class="impact-display">
+                                    <span>Estimated Impact:</span>
+                                    <span class="impact-val" id="impact-electricity">0.0 kg CO₂e</span>
+                                </div>
+                            </div>
+
+                            <div class="input-group">
+                                <label for="select-heating" class="input-label-block">Heating Type</label>
+                                <div class="custom-select-wrapper">
+                                    <select id="select-heating" class="custom-select">
+                                        <option value="gas" selected>Natural Gas</option>
+                                        <option value="electric">Electric (Heat Pump / Resistive)</option>
+                                        <option value="oil">Heating Oil</option>
+                                        <option value="biomass">Biomass / Solar Thermal</option>
+                                    </select>
+                                </div>
+                                <div class="impact-display">
+                                    <span>Estimated Impact:</span>
+                                    <span class="impact-val" id="impact-heating">0.0 kg CO₂e</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </section>
+
+            <!-- INSIGHTS SECTION -->
+            <section class="insights-section glass-card" aria-labelledby="insights-title">
+                <h2 id="insights-title">Your Carbon Insights</h2>
+                
+                <div class="insights-stats-grid">
+                    <div class="insight-stat-card">
+                        <span class="insight-stat-label">Weekly Emissions</span>
+                        <div class="insight-stat-value" id="insight-weekly-val">0.0 kg</div>
+                    </div>
+                    <div class="insight-stat-card">
+                        <span class="insight-stat-label">Annual Emissions</span>
+                        <div class="insight-stat-value" id="insight-annual-val">0.0 t</div>
+                    </div>
+                    <div class="insight-stat-card">
+                        <span class="insight-stat-label">Carbon Score</span>
+                        <div class="insight-stat-value" id="insight-score-val">100</div>
+                    </div>
+                    <div class="insight-stat-card">
+                        <span class="insight-stat-label">Offset Trees Required</span>
+                        <div class="insight-stat-value" id="insight-trees-val">0</div>
+                    </div>
+                </div>
+
+                <!-- Emissions Breakdown (Animated SVG Donut/Chart) -->
+                <div class="breakdown-container">
+                    <div class="chart-wrapper">
+                        <h3>Emissions Breakdown</h3>
+                        <div class="svg-chart-container">
+                            <svg class="donut-chart" viewBox="0 0 100 100" width="180" height="180">
+                                <circle class="donut-hole" cx="50" cy="50" r="40" fill="transparent" role="presentation"></circle>
+                                <circle class="donut-ring" cx="50" cy="50" r="40" fill="transparent" stroke="rgba(255, 255, 255, 0.05)" stroke-width="9"></circle>
+                                
+                                <circle class="donut-segment donut-segment-transport" cx="50" cy="50" r="40" fill="transparent" stroke="var(--accent-blue)" stroke-width="10" stroke-dasharray="0 100" stroke-dashoffset="0"></circle>
+                                <circle class="donut-segment donut-segment-diet" cx="50" cy="50" r="40" fill="transparent" stroke="var(--accent-green)" stroke-width="10" stroke-dasharray="0 100" stroke-dashoffset="0"></circle>
+                                <circle class="donut-segment donut-segment-energy" cx="50" cy="50" r="40" fill="transparent" stroke="var(--accent-yellow)" stroke-width="10" stroke-dasharray="0 100" stroke-dashoffset="0"></circle>
+                            </svg>
+                            <div class="donut-center-text">
+                                <span class="donut-center-num" id="donut-total">0</span>
+                                <span class="donut-center-lbl">kg/wk</span>
+                            </div>
+                        </div>
+                        <div class="chart-legend">
+                            <div class="legend-item"><span class="legend-dot bg-blue"></span> Transport: <span id="legend-transport">0%</span></div>
+                            <div class="legend-item"><span class="legend-dot bg-green"></span> Diet: <span id="legend-diet">0%</span></div>
+                            <div class="legend-item"><span class="legend-dot bg-yellow"></span> Home Energy: <span id="legend-energy">0%</span></div>
+                        </div>
+                    </div>
+
+                    <!-- Comparison Section -->
+                    <div class="comparison-wrapper">
+                        <h3>Comparison (kg CO₂e/week)</h3>
+                        <div class="comparison-bars">
+                            <div class="comparison-item">
+                                <div class="comp-header">
+                                    <span>You</span>
+                                    <span id="comp-val-you">0.0 kg</span>
+                                </div>
+                                <div class="comp-bar-bg">
+                                    <div class="comp-bar-fill color-you" id="comp-bar-you" style="width: 0%"></div>
+                                </div>
+                            </div>
+                            <div class="comparison-item">
+                                <div class="comp-header">
+                                    <span>India Average</span>
+                                    <span>30.0 kg</span>
+                                </div>
+                                <div class="comp-bar-bg">
+                                    <div class="comp-bar-fill color-india" style="width: 30%"></div>
+                                </div>
+                            </div>
+                            <div class="comparison-item">
+                                <div class="comp-header">
+                                    <span>World Average</span>
+                                    <span>90.0 kg</span>
+                                </div>
+                                <div class="comp-bar-bg">
+                                    <div class="comp-bar-fill color-world" style="width: 90%"></div>
+                                </div>
+                            </div>
+                            <div class="comparison-item">
+                                <div class="comp-header">
+                                    <span>Paris Target</span>
+                                    <span>38.0 kg</span>
+                                </div>
+                                <div class="comp-bar-bg">
+                                    <div class="comp-bar-fill color-paris" style="width: 38%"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- RECOMMENDED ACTIONS SECTION -->
+            <section class="actions-section glass-card" aria-labelledby="actions-title">
+                <h2 id="actions-title">Personalized Actions</h2>
+                <div class="actions-grid" id="actions-container">
+                    <!-- Dynamic Recommended Cards will be injected here -->
+                </div>
+            </section>
+
+            <!-- DAILY CHALLENGES SECTION -->
+            <section class="challenges-section glass-card" aria-labelledby="challenges-title">
+                <h2 id="challenges-title">Daily Challenges</h2>
+                <div class="challenges-grid">
+                    
+                    <div class="challenge-card" id="challenge-1">
+                        <label class="challenge-label">
+                            <input type="checkbox" class="challenge-checkbox" data-id="1">
+                            <span class="checkbox-custom"></span>
+                            <div class="challenge-content">
+                                <span class="challenge-icon">🚶</span>
+                                <div class="challenge-text">
+                                    <h4>Walk instead of driving</h4>
+                                    <p>Leave the car keys behind for trips under 2km.</p>
+                                </div>
+                            </div>
+                        </label>
+                    </div>
+
+                    <div class="challenge-card" id="challenge-2">
+                        <label class="challenge-label">
+                            <input type="checkbox" class="challenge-checkbox" data-id="2">
+                            <span class="checkbox-custom"></span>
+                            <div class="challenge-content">
+                                <span class="challenge-icon">🥕</span>
+                                <div class="challenge-text">
+                                    <h4>Meat-free Monday</h4>
+                                    <p>Enjoy plant-based foods for all meals today.</p>
+                                </div>
+                            </div>
+                        </label>
+                    </div>
+
+                    <div class="challenge-card" id="challenge-3">
+                        <label class="challenge-label">
+                            <input type="checkbox" class="challenge-checkbox" data-id="3">
+                            <span class="checkbox-custom"></span>
+                            <div class="challenge-content">
+                                <span class="challenge-icon">🔌</span>
+                                <div class="challenge-text">
+                                    <h4>Turn off standby devices</h4>
+                                    <p>Unplug chargers and appliances not in use.</p>
+                                </div>
+                            </div>
+                        </label>
+                    </div>
+
+                    <div class="challenge-card" id="challenge-4">
+                        <label class="challenge-label">
+                            <input type="checkbox" class="challenge-checkbox" data-id="4">
+                            <span class="checkbox-custom"></span>
+                            <div class="challenge-content">
+                                <span class="challenge-icon">🥤</span>
+                                <div class="challenge-text">
+                                    <h4>Use a reusable bottle</h4>
+                                    <p>Avoid single-use plastics throughout the day.</p>
+                                </div>
+                            </div>
+                        </label>
+                    </div>
+
+                </div>
+            </section>
+
+            <!-- WEEKLY STREAK SECTION -->
+            <section class="streak-section glass-card" aria-labelledby="streak-title">
+                <h2 id="streak-title">🔥 Weekly Green Streak</h2>
+                
+                <div class="streak-progress-row" id="streak-days-container">
+                    <!-- 7 Days icons -->
+                    <div class="streak-day" data-day="Mon"><span class="day-lbl">M</span><span class="day-dot"></span></div>
+                    <div class="streak-day" data-day="Tue"><span class="day-lbl">T</span><span class="day-dot"></span></div>
+                    <div class="streak-day" data-day="Wed"><span class="day-lbl">W</span><span class="day-dot"></span></div>
+                    <div class="streak-day" data-day="Thu"><span class="day-lbl">T</span><span class="day-dot"></span></div>
+                    <div class="streak-day" data-day="Fri"><span class="day-lbl">F</span><span class="day-dot"></span></div>
+                    <div class="streak-day" data-day="Sat"><span class="day-lbl">S</span><span class="day-dot"></span></div>
+                    <div class="streak-day" data-day="Sun"><span class="day-lbl">S</span><span class="day-dot"></span></div>
+                </div>
+
+                <div class="streak-stats-row">
+                    <div class="streak-stat-item">
+                        <span class="streak-stat-lbl">Current Streak</span>
+                        <span class="streak-stat-val" id="curr-streak">3 days</span>
+                    </div>
+                    <div class="streak-stat-item">
+                        <span class="streak-stat-lbl">Longest Streak</span>
+                        <span class="streak-stat-val" id="max-streak">7 days</span>
+                    </div>
+                    <div class="streak-stat-item">
+                        <span class="streak-stat-lbl">Completed Challenges</span>
+                        <span class="streak-stat-val" id="total-completed">12</span>
+                    </div>
+                </div>
+            </section>
+
+            <!-- AI ECO COACH -->
+            <section class="ai-coach-section glass-card" aria-labelledby="ai-coach-title">
+                <h2 id="ai-coach-title">🤖 AI Eco Coach</h2>
+                <p class="coach-desc">Get tailored strategies powered by AI, analyzing your current transportation, diet, and energy metrics instantly.</p>
+                
+                <div class="coach-actions">
+                    <button class="btn btn-primary" id="btn-generate-plan">Generate My Personalized Plan</button>
+                </div>
+                
+                <div class="coach-ask-container">
+                    <label for="coach-ask-input" class="sr-only">Ask AI for more ideas</label>
+                    <input type="text" id="coach-ask-input" placeholder="Ask AI: e.g. How can I lower my electricity footprint?" class="custom-input">
+                    <button class="btn btn-secondary" id="btn-ask-coach">Ask AI</button>
+                </div>
+
+                <!-- Simulation Output Box -->
+                <div class="coach-response-box hidden" id="coach-response">
+                    <div class="coach-response-header">
+                        <span class="coach-response-icon">💡</span>
+                        <span>AI Eco Coach Recommendation</span>
+                    </div>
+                    <div class="coach-response-body" id="coach-response-text">
+                        <!-- Filled dynamically -->
+                    </div>
+                </div>
+            </section>
+
+        </main>
+        
+        <!-- FOOTER -->
+        <footer class="footer-section">
+            <p>Made with 💚 for the planet. Stay green!</p>
+        </footer>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
