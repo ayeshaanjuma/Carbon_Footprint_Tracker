@@ -97,6 +97,16 @@
                                     <span class="impact-val" id="impact-flights">0.0 kg CO₂e</span>
                                 </div>
                             </div>
+
+                            <!-- GPS Suggestions -->
+                            <div class="input-group" style="border-top: 1px solid rgba(255, 255, 255, 0.05); padding-top: 1.25rem; margin-top: 1.25rem;">
+                                <button class="btn btn-secondary btn-full" id="btn-gps-transit">
+                                    <span>📍 Find Nearby Transit & Cycling Routes</span>
+                                </button>
+                                <div id="gps-status" class="gps-suggestions-box hidden">
+                                    <!-- Dynamic GPS suggestions will be rendered here -->
+                                </div>
+                            </div>
                         </div>
                     </div>
 
@@ -175,6 +185,19 @@
                                 <div class="impact-display">
                                     <span>Estimated Impact:</span>
                                     <span class="impact-val" id="impact-heating">0.0 kg CO₂e</span>
+                                </div>
+                            </div>
+
+                            <!-- OCR Bill Scanner -->
+                            <div class="input-group" style="border-top: 1px solid rgba(255, 255, 255, 0.05); padding-top: 1.25rem; margin-top: 1.25rem; position: relative;">
+                                <label class="input-label-block">Scan Electricity Bill (OCR)</label>
+                                <input type="file" id="bill-upload" accept="image/*" class="sr-only">
+                                <button class="btn btn-secondary btn-full" id="btn-bill-scan">
+                                    <span>📁 Upload & Scan Bill Image</span>
+                                </button>
+                                <div id="ocr-status-box" class="ocr-status-box hidden">
+                                    <div class="scanner-laser-line"></div>
+                                    <span class="ocr-status-text" id="ocr-status-text">Uploading image...</span>
                                 </div>
                             </div>
                         </div>
@@ -299,16 +322,39 @@
                         </div>
                     </div>
 
-                    <!-- Progress Stats -->
-                    <div class="progress-stats-container">
-                        <div class="insight-stat-card">
-                            <span class="insight-stat-label">Total CO₂ Saved</span>
-                            <div class="insight-stat-value" id="stat-saved-co2">0.0 kg</div>
+                    <!-- Carbon Budget Card -->
+                    <div class="goal-setting-card" id="budget-card">
+                        <div class="input-header">
+                            <span>Monthly Carbon Budget</span>
+                            <span class="value-display" style="color: var(--accent-blue);">200 kg CO₂e</span>
                         </div>
-                        <div class="insight-stat-card">
-                            <span class="insight-stat-label">Improvement Rate</span>
-                            <div class="insight-stat-value" id="stat-improvement-pct">0.0%</div>
+                        <div class="goal-status-wrapper" style="margin-top: 0.5rem; margin-bottom: 0.5rem;">
+                            <span>Remaining Budget:</span>
+                            <span class="goal-status-badge" id="budget-status-text">120 kg left</span>
                         </div>
+                        <div class="comp-bar-bg" style="margin-top: 0.75rem;">
+                            <div class="comp-bar-fill color-you" id="budget-progress-bar" style="width: 0%" role="progressbar" aria-valuemin="0" aria-valuemax="200" aria-valuenow="0"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Savings Dashboard (4 cards grid) -->
+                <div class="progress-stats-container" style="grid-template-columns: repeat(2, 1fr); gap: 1rem; margin-top: 1.5rem;">
+                    <div class="insight-stat-card">
+                        <span class="insight-stat-label">Total CO₂ Saved</span>
+                        <div class="insight-stat-value" id="stat-saved-co2">0.0 kg</div>
+                    </div>
+                    <div class="insight-stat-card">
+                        <span class="insight-stat-label">Money Saved</span>
+                        <div class="insight-stat-value" id="stat-saved-money" style="color: var(--accent-green);">$0.00</div>
+                    </div>
+                    <div class="insight-stat-card">
+                        <span class="insight-stat-label">Energy Saved</span>
+                        <div class="insight-stat-value" id="stat-saved-energy" style="color: var(--accent-blue);">0.0 kWh</div>
+                    </div>
+                    <div class="insight-stat-card">
+                        <span class="insight-stat-label">Tree Equivalents</span>
+                        <div class="insight-stat-value" id="stat-improvement-pct">0</div>
                     </div>
                 </div>
 
@@ -356,30 +402,44 @@
                     </div>
                 </div>
 
-                <div class="badges-grid-container" style="margin-top: 1.5rem;">
-                    <h3>Achievement Badges</h3>
-                    <div class="badges-grid" id="badges-grid-list">
-                        <div class="badge-item locked" id="badge-eco-starter" title="Unlock: Log your first week">
-                            <span class="badge-icon">🌱</span>
-                            <span class="badge-label">Eco Starter</span>
-                        </div>
-                        <div class="badge-item locked" id="badge-transit-hero" title="Unlock: Keep driving distance below 50km/week">
-                            <span class="badge-icon">🚲</span>
-                            <span class="badge-label">Transit Hero</span>
-                        </div>
-                        <div class="badge-item locked" id="badge-veggie-master" title="Unlock: Reduce meat meals to 0">
-                            <span class="badge-icon">🥗</span>
-                            <span class="badge-label">Veggie Master</span>
-                        </div>
-                        <div class="badge-item locked" id="badge-power-saver" title="Unlock: Reduce monthly electricity below 150 kWh">
-                            <span class="badge-icon">🔌</span>
-                            <span class="badge-label">Power Saver</span>
-                        </div>
-                        <div class="badge-item locked" id="badge-streak-master" title="Unlock: Maintain a 5-day active streak">
-                            <span class="badge-icon">🔥</span>
-                            <span class="badge-label">Streak Master</span>
+                <!-- Leaderboard & Badges layout split -->
+                <div class="badges-split-layout" style="display: flex; flex-direction: column; gap: 2rem; margin-top: 1.5rem;">
+                    
+                    <!-- Badges Box -->
+                    <div class="badges-grid-container" style="flex: 1;">
+                        <h3>Achievement Badges</h3>
+                        <div class="badges-grid" id="badges-grid-list">
+                            <div class="badge-item locked" id="badge-eco-starter" title="Unlock: Log your first week">
+                                <span class="badge-icon">🌱</span>
+                                <span class="badge-label">Eco Starter</span>
+                            </div>
+                            <div class="badge-item locked" id="badge-transit-hero" title="Unlock: Keep driving distance below 50km/week">
+                                <span class="badge-icon">🚲</span>
+                                <span class="badge-label">Transit Hero</span>
+                            </div>
+                            <div class="badge-item locked" id="badge-veggie-master" title="Unlock: Reduce meat meals to 0">
+                                <span class="badge-icon">🥗</span>
+                                <span class="badge-label">Veggie Master</span>
+                            </div>
+                            <div class="badge-item locked" id="badge-power-saver" title="Unlock: Reduce monthly electricity below 150 kWh">
+                                <span class="badge-icon">🔌</span>
+                                <span class="badge-label">Power Saver</span>
+                            </div>
+                            <div class="badge-item locked" id="badge-streak-master" title="Unlock: Maintain a 5-day active streak">
+                                <span class="badge-icon">🔥</span>
+                                <span class="badge-label">Streak Master</span>
+                            </div>
                         </div>
                     </div>
+
+                    <!-- Leaderboard Box -->
+                    <div class="leaderboard-container" style="flex: 1;">
+                        <h3>Community Leaderboard</h3>
+                        <div class="leaderboard-list" id="leaderboard-list">
+                            <!-- Rows will be injected dynamically -->
+                        </div>
+                    </div>
+
                 </div>
             </section>
 

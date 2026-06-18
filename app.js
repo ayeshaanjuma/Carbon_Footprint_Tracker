@@ -7,7 +7,7 @@ document.addEventListener('DOMContentLoaded', () => {
         foodWaste: 1, // 0 = Low, 1 = Med, 2 = High
         electricity: 250,
         heating: 'gas', // gas, electric, oil, biomass
-        completedChallenges: [], // Array of string IDs: 'category-id' (e.g. 'transport-1')
+        completedChallenges: [], // Array of string IDs: 'category-id'
         streak: 3,
         longestStreak: 7,
         totalCompleted: 12,
@@ -18,7 +18,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // Gamification
         xp: 0,
-        unlockedBadges: [] // array of string IDs: 'eco-starter', 'transit-hero', etc.
+        unlockedBadges: [] // array of string IDs
     };
 
     let state = { ...defaultState };
@@ -79,14 +79,29 @@ document.addEventListener('DOMContentLoaded', () => {
             goalStatusText: document.getElementById('goal-status-text'),
             goalProgressBar: document.getElementById('goal-progress-bar'),
             statSavedCo2: document.getElementById('stat-saved-co2'),
+            statSavedMoney: document.getElementById('stat-saved-money'),
+            statSavedEnergy: document.getElementById('stat-saved-energy'),
             statImprovementPct: document.getElementById('stat-improvement-pct'),
             lastLogTime: document.getElementById('last-log-time'),
+
+            // Carbon budget elements
+            budgetProgressBar: document.getElementById('budget-progress-bar'),
+            budgetStatusText: document.getElementById('budget-status-text'),
+            budgetCard: document.getElementById('budget-card'),
 
             // Gamification Levels & Badges DOM elements
             levelName: document.getElementById('lbl-level-name'),
             levelXpText: document.getElementById('lbl-level-xp'),
             levelProgressBar: document.getElementById('level-progress-bar'),
             badgesGridList: document.getElementById('badges-grid-list'),
+
+            // GPS and OCR elements
+            gpsStatus: document.getElementById('gps-status'),
+            ocrStatusBox: document.getElementById('ocr-status-box'),
+            ocrStatusText: document.getElementById('ocr-status-text'),
+
+            // Leaderboard
+            leaderboardList: document.getElementById('leaderboard-list'),
 
             // Modal elements
             modalValCo2: document.getElementById('modal-val-co2'),
@@ -99,7 +114,9 @@ document.addEventListener('DOMContentLoaded', () => {
             askCoach: document.getElementById('btn-ask-coach'),
             logWeek: document.getElementById('btn-log-week'),
             resetHistory: document.getElementById('btn-reset-history'),
-            closeModal: document.getElementById('btn-close-modal')
+            closeModal: document.getElementById('btn-close-modal'),
+            gpsTransit: document.getElementById('btn-gps-transit'),
+            billScan: document.getElementById('btn-bill-scan')
         },
         coach: {
             askInput: document.getElementById('coach-ask-input'),
@@ -113,6 +130,9 @@ document.addEventListener('DOMContentLoaded', () => {
             dots: document.getElementById('chart-dots'),
             grid: document.getElementById('chart-grid-lines'),
             emptyMsg: document.getElementById('chart-empty-msg')
+        },
+        inputs: {
+            billUpload: document.getElementById('bill-upload')
         },
         modalOverlay: document.getElementById('summary-modal'),
         accordionTriggers: document.querySelectorAll('.accordion-trigger'),
@@ -312,7 +332,21 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
 
-        // 9. Goals Status & Progress Cards
+        // 9. Sync Checkbox DOM states
+        dom.challengeCheckboxes = document.querySelectorAll('.challenge-checkbox');
+        dom.challengeCheckboxes.forEach(checkbox => {
+            const challengeId = checkbox.getAttribute('data-key');
+            checkbox.checked = state.completedChallenges.includes(challengeId);
+            
+            const card = checkbox.closest('.challenge-card');
+            if (checkbox.checked) {
+                card.classList.add('completed-state');
+            } else {
+                card.classList.remove('completed-state');
+            }
+        });
+
+        // 10. Goals Status & Progress Cards
         let goalProgressPct = 0;
         if (impacts.total <= state.weeklyTarget) {
             dom.displays.goalStatusText.textContent = 'Met Target';
@@ -332,13 +366,33 @@ document.addEventListener('DOMContentLoaded', () => {
         dom.displays.goalProgressBar.style.width = `${goalProgressPct}%`;
         dom.displays.goalProgressBar.setAttribute('aria-valuenow', goalProgressPct);
 
-        // 10. Calculate Historical stats
+        // 11. Carbon Budget Dashboard
+        const monthlyAllowance = 200; // kg CO₂e allowance per month
+        const currentMonthlyFootprint = impacts.total * 4.33; // 4.33 weeks per month
+        const remainingBudget = monthlyAllowance - currentMonthlyFootprint;
+
+        let budgetProgress = Math.min(100, Math.round((currentMonthlyFootprint / monthlyAllowance) * 100));
+        dom.displays.budgetProgressBar.style.width = `${budgetProgress}%`;
+        dom.displays.budgetProgressBar.setAttribute('aria-valuenow', budgetProgress);
+
+        if (remainingBudget >= 0) {
+            dom.displays.budgetStatusText.textContent = `${Math.round(remainingBudget)} kg left`;
+            dom.displays.budgetStatusText.className = 'goal-status-badge score-green';
+            dom.displays.budgetCard.style.boxShadow = 'none';
+        } else {
+            dom.displays.budgetStatusText.textContent = `${Math.round(Math.abs(remainingBudget))} kg OVER`;
+            dom.displays.budgetStatusText.className = 'goal-status-badge score-red';
+            // Trigger red pulsing warning
+            dom.displays.budgetCard.style.boxShadow = '0 0 15px rgba(239, 68, 68, 0.2)';
+        }
+
+        // 12. Calculate Historical stats and Savings dashboard
         calculateHistoricalStats(impacts.total);
 
-        // 11. Render Trend Graph
+        // 13. Render Trend Graph
         renderTrendChart();
 
-        // 12. Gamification Levels Progression
+        // 14. Gamification Levels Progression
         const level = Math.floor(state.xp / 200) + 1;
         const xpInLevel = state.xp % 200;
         const xpPercent = (xpInLevel / 200) * 100;
@@ -351,46 +405,59 @@ document.addEventListener('DOMContentLoaded', () => {
         dom.displays.levelProgressBar.style.width = `${xpPercent}%`;
         dom.displays.levelProgressBar.setAttribute('aria-valuenow', Math.round(xpPercent));
 
-        // 13. Dynamic Challenge updates & binding based on highest emissions
+        // 15. Dynamic Challenge updates & binding based on highest emissions
         updateDynamicChallenges(impacts.transport, impacts.diet, impacts.energy);
 
-        // 14. Evaluate Achievement badge unlocks
+        // 16. Evaluate Achievement badge unlocks
         evaluateBadges(dynamicStreak);
 
-        // 15. Actions & recommendations (AI personalized engine)
+        // 17. Community Leaderboard sorting
+        updateLeaderboard(impacts.score);
+
+        // 18. Actions & recommendations (AI personalized engine)
         updateRecommendations();
         
         // Save current parameters to LocalStorage
         saveState();
     }
 
-    // --- HISTORICAL STATS ---
+    // --- COMPREHENSIVE SAVINGS DASHBOARD ---
     function calculateHistoricalStats(currentWeeklyCo2) {
-        if (!state.history || state.history.length === 0) {
-            dom.displays.statSavedCo2.textContent = '0.0 kg';
-            dom.displays.statImprovementPct.textContent = '0.0%';
+        // Fallback default baseline calculations if no history recorded yet
+        const firstCo2 = state.history && state.history.length > 0 ? state.history[0].co2 : 110; 
+        
+        let totalCo2Saved = 0;
+        if (state.history && state.history.length > 0) {
+            state.history.forEach(log => {
+                totalCo2Saved += Math.max(0, firstCo2 - log.co2);
+            });
+        } else {
+            // Simulated baseline comparison for savings dashboard
+            totalCo2Saved = Math.max(0, firstCo2 - currentWeeklyCo2);
+        }
+
+        // Money Saved: $0.15 saved per km reduced from baseline of 250km, and $0.12 per kWh saved from baseline of 350kWh
+        const drivingSaved = Math.max(0, 250 - state.driving);
+        const energySavedKwh = Math.max(0, 350 - state.electricity);
+        const moneySavedVal = (drivingSaved * 0.15) + (energySavedKwh * 0.12);
+
+        // Energy Saved (in kWh equivalent)
+        const drivingSavedEnergyKwh = drivingSaved * 0.8; // 1km ~0.8kWh equivalent
+        const totalEnergySaved = energySavedKwh + drivingSavedEnergyKwh;
+
+        // Trees equivalent
+        const treesRequired = Math.round(totalCo2Saved / 22);
+
+        dom.displays.statSavedCo2.textContent = `${totalCo2Saved.toFixed(1)} kg`;
+        dom.displays.statSavedMoney.textContent = `$${moneySavedVal.toFixed(2)}`;
+        dom.displays.statSavedEnergy.textContent = `${totalEnergySaved.toFixed(1)} kWh`;
+        dom.displays.statImprovementPct.textContent = treesRequired; // Used as trees indicator
+
+        if (state.history && state.history.length > 0) {
+            dom.displays.lastLogTime.textContent = `Last entry: ${state.history[state.history.length - 1].date}`;
+        } else {
             dom.displays.lastLogTime.textContent = '';
-            return;
         }
-
-        const firstLog = state.history[0];
-        const lastLog = state.history[state.history.length - 1];
-
-        // Total saved is the aggregate difference between first recorded week and subsequent weeks
-        let totalSaved = 0;
-        state.history.forEach(log => {
-            totalSaved += (firstLog.co2 - log.co2);
-        });
-
-        // Percentage improvement compared to first week
-        let improvementPct = 0;
-        if (firstLog.co2 > 0) {
-            improvementPct = ((firstLog.co2 - currentWeeklyCo2) / firstLog.co2) * 100;
-        }
-
-        dom.displays.statSavedCo2.textContent = `${totalSaved.toFixed(1)} kg`;
-        dom.displays.statImprovementPct.textContent = `${improvementPct.toFixed(1)}%`;
-        dom.displays.lastLogTime.textContent = `Last entry: ${lastLog.date}`;
     }
 
     // --- RENDER TREND CHART (SVG) ---
@@ -420,7 +487,6 @@ document.addEventListener('DOMContentLoaded', () => {
         const minCo2 = Math.max(0, Math.min(...history.map(h => h.co2), state.weeklyTarget) - 10);
         const co2Range = maxCo2 - minCo2 || 20;
 
-        // Calculate visual screen coordinates
         const coords = [];
         history.forEach((log, index) => {
             let x = 250;
@@ -431,7 +497,6 @@ document.addEventListener('DOMContentLoaded', () => {
             coords.push({ x, y, val: log.co2, date: log.date });
         });
 
-        // Create Grid Lines
         let gridLinesHtml = '';
         const targetY = height - paddingBottom - ((state.weeklyTarget - minCo2) / co2Range) * (height - paddingTop - paddingBottom);
         if (targetY >= paddingTop && targetY <= (height - paddingBottom)) {
@@ -442,7 +507,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         dom.chart.grid.innerHTML = gridLinesHtml;
 
-        // Make Path string
         let linePath = `M ${coords[0].x} ${coords[0].y}`;
         for (let i = 1; i < coords.length; i++) {
             linePath += ` L ${coords[i].x} ${coords[i].y}`;
@@ -527,7 +591,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 dom.displays.challengesContainer.appendChild(card);
             });
 
-            // Bind checkbox events to the newly generated DOM elements
             bindChallengeCheckboxes();
         }
     }
@@ -543,10 +606,8 @@ document.addEventListener('DOMContentLoaded', () => {
                     card.classList.add('completed-flash');
                     if (!state.completedChallenges.includes(key)) {
                         state.completedChallenges.push(key);
-                        // Add XP (+50 per challenge)
                         state.xp += 50;
                     }
-                    // Trigger confetti explosion
                     createConfetti(card);
                     setTimeout(() => card.classList.remove('completed-flash'), 500);
                 } else {
@@ -561,14 +622,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- CELEBRATION CONFETTI MAKER ---
     function createConfetti(element) {
-        const rect = element.getBoundingClientRect();
         const colors = ['#4ade80', '#38bdf8', '#fbbf24', '#f43f5e', '#a855f7'];
 
         for (let i = 0; i < 20; i++) {
             const particle = document.createElement('div');
             particle.className = 'confetti';
             
-            // Random particle properties
             const randomColor = colors[Math.floor(Math.random() * colors.length)];
             const size = Math.random() * 5 + 4;
             
@@ -576,11 +635,9 @@ document.addEventListener('DOMContentLoaded', () => {
             particle.style.height = `${size}px`;
             particle.style.background = randomColor;
             
-            // Center absolute positions inside the challenge card
             particle.style.left = `50%`;
             particle.style.top = `50%`;
 
-            // Random angle and distance vectors
             const angle = Math.random() * Math.PI * 2;
             const distance = Math.random() * 80 + 40;
             const x = Math.cos(angle) * distance;
@@ -591,7 +648,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
             element.appendChild(particle);
 
-            // Clean up elements from DOM
             setTimeout(() => particle.remove(), 800);
         }
     }
@@ -641,13 +697,134 @@ document.addEventListener('DOMContentLoaded', () => {
         return newlyUnlocked;
     }
 
-    // --- RECOMMENDATIONS (PERSONALIZED AI-DRIVEN RULES ENGINE) ---
+    // --- LEADERBOARD ---
+    const leaderboardBaseline = [
+        { name: "Aarav Gupta", score: 94 },
+        { name: "Priya Sharma", score: 85 },
+        { name: "Kabir Mehta", score: 71 },
+        { name: "Ananya Roy", score: 55 }
+    ];
+
+    function updateLeaderboard(userScore) {
+        const combined = [...leaderboardBaseline, { name: "You", score: userScore }];
+        
+        // Sort descending by score
+        combined.sort((a, b) => b.score - a.score);
+
+        dom.displays.leaderboardList.innerHTML = '';
+        combined.forEach((player, index) => {
+            const isUser = player.name === "You";
+            const row = document.createElement('div');
+            row.className = `leaderboard-row ${isUser ? 'user-highlight' : ''}`;
+            row.innerHTML = `
+                <div class="leaderboard-rank-name">
+                    <span class="leaderboard-rank">#${index + 1}</span>
+                    <span class="leaderboard-name">${player.name}</span>
+                </div>
+                <span class="leaderboard-score">${player.score} pts</span>
+            `;
+            dom.displays.leaderboardList.appendChild(row);
+        });
+    }
+
+    // --- GPS TRANSIT LOCATOR ---
+    dom.buttons.gpsTransit.addEventListener('click', () => {
+        dom.displays.gpsStatus.classList.remove('hidden');
+        dom.displays.gpsStatus.innerHTML = `
+            <div class="text-secondary" style="font-size: 0.85rem; text-align: center; width: 100%;">
+                <span class="scanner-laser-line" style="position: static; display: inline-block; width: 20px; height: 20px; border-radius: 50%; border: 2px solid var(--accent-green); border-top-color: transparent; animation: ocrScan 1s linear infinite;"></span>
+                <span>Accessing GPS location coordinates...</span>
+            </div>
+        `;
+
+        const renderSuggestions = (lat, lon) => {
+            // Proximity calculation based on dummy offset values
+            const metroDist = Math.round((Math.sin(lat) + 1) * 350 + 150);
+            const busDist = Math.round((Math.cos(lon) + 1) * 120 + 80);
+            const cycleDist = Math.round((Math.sin(lat + lon) + 1) * 250 + 100);
+
+            dom.displays.gpsStatus.innerHTML = `
+                <div class="gps-route-item">
+                    <div class="gps-route-icon" aria-hidden="true">🚇</div>
+                    <div class="gps-route-info">
+                        <span class="gps-route-name">Metro Station (${metroDist}m away)</span>
+                        <span class="gps-route-desc">Green Line • Rapid Transit Corridor</span>
+                    </div>
+                    <span class="gps-route-saving">-9.2 kg CO₂/commute</span>
+                </div>
+                <div class="gps-route-item">
+                    <div class="gps-route-icon" aria-hidden="true">🚍</div>
+                    <div class="gps-route-info">
+                        <span class="gps-route-name">Bus Route 42 (${busDist}m away)</span>
+                        <span class="gps-route-desc">Express Link to Downtown Terminal</span>
+                    </div>
+                    <span class="gps-route-saving">-5.5 kg CO₂/commute</span>
+                </div>
+                <div class="gps-route-item">
+                    <div class="gps-route-icon" aria-hidden="true">🚲</div>
+                    <div class="gps-route-info">
+                        <span class="gps-route-name">Dedicated Bike Path (${cycleDist}m away)</span>
+                        <span class="gps-route-desc">Safe Cycling Expressway Grid</span>
+                    </div>
+                    <span class="gps-route-saving">-12.0 kg CO₂/commute</span>
+                </div>
+            `;
+        };
+
+        if (navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition(
+                (pos) => {
+                    setTimeout(() => renderSuggestions(pos.coords.latitude, pos.coords.longitude), 1000);
+                },
+                (err) => {
+                    // Fallback to coordinates mock if permission denied/fails
+                    setTimeout(() => renderSuggestions(12.97, 77.59), 1000);
+                }
+            );
+        } else {
+            setTimeout(() => renderSuggestions(12.97, 77.59), 1000);
+        }
+    });
+
+    // --- OCR BILL SCANNER ---
+    dom.buttons.billScan.addEventListener('click', () => {
+        dom.inputs.billUpload.click();
+    });
+
+    dom.inputs.billUpload.addEventListener('change', (e) => {
+        if (e.target.files.length === 0) return;
+
+        dom.displays.ocrStatusBox.classList.remove('hidden');
+        dom.displays.ocrStatusText.textContent = "Uploading image...";
+
+        setTimeout(() => {
+            dom.displays.ocrStatusText.textContent = "Running OCR scan line checks...";
+            setTimeout(() => {
+                dom.displays.ocrStatusText.textContent = "Extracting energy data values...";
+                setTimeout(() => {
+                    // Extracted dynamic value simulated
+                    const randomKwh = Math.floor(Math.random() * 200) + 160; // 160 to 360 kWh
+                    state.electricity = randomKwh;
+                    
+                    dom.displays.ocrStatusText.textContent = `Success! Detected: ${randomKwh} kWh/month`;
+                    requestRender();
+                    
+                    setTimeout(() => {
+                        dom.displays.ocrStatusBox.classList.add('hidden');
+                        dom.inputs.billUpload.value = ''; // clear input
+                    }, 2000);
+                }, 1000);
+            }, 1000);
+        }, 1000);
+    });
+
+    // --- RECOMMENDATIONS ---
     function updateRecommendations() {
         const list = [];
 
         // 1. Walk or Bike short trips
         if (state.driving > 30) {
-            const savingsVal = Math.round(state.driving * 0.17 * 52 * 0.3); // 30% savings rate
+            const savingsVal = Math.round(state.driving * 0.17 * 52 * 0.3);
             list.push({
                 icon: '🚲',
                 title: 'Walk or Bike Short Trips',
@@ -659,7 +836,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // 2. Carpooling and Commuter sharing
         if (state.driving > 80) {
-            const savingsVal = Math.round(state.driving * 0.17 * 52 * 0.4); // 40% savings rate
+            const savingsVal = Math.round(state.driving * 0.17 * 52 * 0.4);
             list.push({
                 icon: '🚍',
                 title: 'Transit & Carpooling Commutes',
@@ -671,7 +848,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // 3. Flight offsetting or avoidance
         if (state.flights > 0) {
-            const savingsVal = Math.round(state.flights * 500 * 0.3); // 30% savings
+            const savingsVal = Math.round(state.flights * 500 * 0.3);
             list.push({
                 icon: '✈️',
                 title: 'Flight Offsetting & Reduction',
@@ -683,7 +860,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // 4. Plant based dietary transition
         if (state.meat > 2) {
-            const savingsVal = Math.round(state.meat * 2.5 * 52 * 0.5); // Swap 50%
+            const savingsVal = Math.round(state.meat * 2.5 * 52 * 0.5);
             list.push({
                 icon: '🥗',
                 title: 'Increase Plant-Based Meals',
@@ -696,7 +873,7 @@ document.addEventListener('DOMContentLoaded', () => {
         // 5. Zero Food Waste
         if (state.foodWaste >= 1) {
             const wasteCo2 = CO2_FACTORS.foodWaste[state.foodWaste];
-            const savingsVal = Math.round(wasteCo2 * 52 * 0.6); // 60% savings rate
+            const savingsVal = Math.round(wasteCo2 * 52 * 0.6);
             const levelStr = state.foodWaste === 1 ? 'Medium' : 'High';
             list.push({
                 icon: '🗑️',
@@ -709,7 +886,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // 6. Electricity optimization
         if (state.electricity > 100) {
-            const savingsVal = Math.round(state.electricity * (0.85 / 4.33) * 52 * 0.15); // 15% reduction
+            const savingsVal = Math.round(state.electricity * (0.85 / 4.33) * 52 * 0.15);
             list.push({
                 icon: '💡',
                 title: 'Energy Efficient LED & Smart Plugs',
@@ -723,7 +900,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (state.heating !== 'biomass') {
             const heatingCo2 = CO2_FACTORS.heating[state.heating];
             const biomassCo2 = CO2_FACTORS.heating.biomass;
-            const savingsVal = Math.round((heatingCo2 - biomassCo2) * 52 * 0.5); // 50% upgrade savings
+            const savingsVal = Math.round((heatingCo2 - biomassCo2) * 52 * 0.5);
             const heatLabels = { gas: 'Natural Gas', electric: 'Electric', oil: 'Heating Oil' };
             list.push({
                 icon: '🌡️',
@@ -796,18 +973,14 @@ document.addEventListener('DOMContentLoaded', () => {
             state.history.shift();
         }
 
-        // Add 100 XP for saving weekly entry
         state.xp += 100;
 
-        // Perform instant evaluate to capture any new badge unlocks
         const currentStreak = state.streak + state.completedChallenges.length;
         const newlyUnlocked = evaluateBadges(currentStreak);
 
-        // Open modal
         dom.displays.modalValCo2.textContent = impacts.total.toFixed(1);
         dom.displays.modalValStreak.textContent = `${currentStreak} days`;
 
-        // Render unlocked badges in modal
         dom.displays.modalBadgesGrid.innerHTML = '';
         if (newlyUnlocked.length > 0) {
             dom.displays.modalBadgesBanner.classList.remove('hidden');

@@ -283,7 +283,7 @@ h2 {
 }
 
 .accordion-item.expanded .accordion-content {
-    max-height: 500px;
+    max-height: 800px; /* Increased to fit new elements */
     padding-bottom: 1.5rem;
 }
 
@@ -816,7 +816,7 @@ h2 {
 }
 
 .modal-stat-lbl {
-    font-size: 0.7rem;
+    font-size: 0.75rem;
     color: var(--text-muted);
     text-transform: uppercase;
 }
@@ -852,6 +852,167 @@ h2 {
     100% {
         transform: translate(var(--x), var(--y)) scale(0.3);
         opacity: 0;
+    }
+}
+
+/* ADVANCED WIDGETS STYLING */
+.btn-full {
+    width: 100%;
+}
+
+.gps-suggestions-box {
+    margin-top: 1rem;
+    background: rgba(255, 255, 255, 0.015);
+    border: 1px solid rgba(255, 255, 255, 0.04);
+    border-radius: 10px;
+    padding: 1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.gps-route-item {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid rgba(255, 255, 255, 0.04);
+    border-radius: 8px;
+    padding: 0.75rem;
+    transition: transform var(--transition-fast);
+}
+
+.gps-route-item:hover {
+    transform: translateX(3px);
+    background: rgba(255, 255, 255, 0.04);
+}
+
+.gps-route-icon {
+    font-size: 1.4rem;
+    background: rgba(255, 255, 255, 0.03);
+    border-radius: 6px;
+    width: 38px;
+    height: 38px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.gps-route-info {
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
+}
+
+.gps-route-name {
+    font-weight: 600;
+    font-size: 0.9rem;
+}
+
+.gps-route-desc {
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+}
+
+.gps-route-saving {
+    font-size: 0.8rem;
+    color: var(--accent-green);
+    font-weight: 600;
+}
+
+/* OCR scanner styling */
+.ocr-status-box {
+    position: relative;
+    margin-top: 0.75rem;
+    border: 1px solid rgba(74, 222, 128, 0.2);
+    background: rgba(74, 222, 128, 0.03);
+    border-radius: 8px;
+    padding: 1rem;
+    overflow: hidden;
+    min-height: 48px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.ocr-status-text {
+    font-size: 0.85rem;
+    font-weight: 500;
+    color: var(--accent-green);
+    z-index: 2;
+}
+
+.scanner-laser-line {
+    position: absolute;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: var(--accent-green);
+    box-shadow: 0 0 8px var(--accent-green);
+    z-index: 1;
+    animation: ocrScan 1.5s ease-in-out infinite;
+}
+
+@keyframes ocrScan {
+    0% { top: 0%; }
+    50% { top: 100%; }
+    100% { top: 0%; }
+}
+
+/* Leaderboard */
+.leaderboard-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    margin-top: 1rem;
+}
+
+.leaderboard-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.65rem 1rem;
+    background: rgba(255, 255, 255, 0.015);
+    border: 1px solid rgba(255, 255, 255, 0.04);
+    border-radius: 8px;
+    font-size: 0.9rem;
+    transition: transform var(--transition-fast);
+}
+
+.leaderboard-row:hover {
+    transform: translateX(2px);
+    background: rgba(255, 255, 255, 0.03);
+}
+
+.leaderboard-row.user-highlight {
+    background: rgba(74, 222, 128, 0.08);
+    border-color: rgba(74, 222, 128, 0.3);
+    font-weight: 700;
+}
+
+.leaderboard-rank-name {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.leaderboard-rank {
+    font-weight: 800;
+    color: var(--text-muted);
+}
+
+.leaderboard-row.user-highlight .leaderboard-rank {
+    color: var(--accent-green);
+}
+
+.leaderboard-score {
+    font-weight: 700;
+    color: var(--text-primary);
+}
+
+@media(min-width: 900px) {
+    .badges-split-layout {
+        flex-direction: row;
     }
 }
 
