@@ -334,8 +334,8 @@ document.addEventListener('DOMContentLoaded', () => {
         // 12. Render Trend Graph
         renderTrendChart();
 
-        // 13. Actions & recommendations
-        updateRecommendations(impacts.transport, impacts.diet, impacts.energy);
+        // 13. Actions & recommendations (AI personalized engine)
+        updateRecommendations();
         
         // Save current parameters to LocalStorage
         saveState();
@@ -443,63 +443,141 @@ document.addEventListener('DOMContentLoaded', () => {
         dom.chart.dots.innerHTML = dotsHtml;
     }
 
-    // --- RECOMMENDATIONS ---
-    function updateRecommendations(transportVal, dietVal, energyVal) {
-        const recommendations = {
-            transport: [
-                { icon: '🚲', title: 'Walk or Bike Short Trips', desc: 'Replace vehicle trips under 3km with walking or cycling.', savings: '350 kg CO₂e/yr', priority: 'High' },
-                { icon: '🚍', title: 'Use Public Transit', desc: 'Commute via bus or train twice a week instead of driving.', savings: '520 kg CO₂e/yr', priority: 'High' },
-                { icon: '🚗', title: 'Carpool to Work/School', desc: 'Share your drive with coworkers or friends to split emissions.', savings: '450 kg CO₂e/yr', priority: 'Medium' }
-            ],
-            diet: [
-                { icon: '🥗', title: 'Reduce Beef & Lamb Consumption', desc: 'Swap red meats for poultry, fish, or plant proteins.', savings: '600 kg CO₂e/yr', priority: 'High' },
-                { icon: '🍲', title: 'Embrace Meat-Free Mondays', desc: 'Commit to full plant-based eating at least one day a week.', savings: '400 kg CO₂e/yr', priority: 'Medium' },
-                { icon: '🗑️', title: 'Compost & Minimize Waste', desc: 'Plan meals and compost leftovers to prevent landfill methane.', savings: '200 kg CO₂e/yr', priority: 'Low' }
-            ],
-            energy: [
-                { icon: '🌡️', title: 'Adjust Smart Thermostat', desc: 'Keep heating at 20°C and cooling at 25°C to optimize electricity.', savings: '700 kg CO₂e/yr', priority: 'High' },
-                { icon: '💡', title: 'Upgrade to LED Lighting', desc: 'Replace inefficient incandescent bulbs with smart LEDs.', savings: '150 kg CO₂e/yr', priority: 'Medium' },
-                { icon: '🔌', title: 'Eliminate Vampire Power', desc: 'Unplug power strips and standby electronics when not in use.', savings: '100 kg CO₂e/yr', priority: 'Low' }
-            ]
-        };
+    // --- RECOMMENDATIONS (PERSONALIZED AI-DRIVEN RULES ENGINE) ---
+    function updateRecommendations() {
+        const list = [];
 
-        let highestCategory = 'transport';
-        let maxVal = transportVal;
-
-        if (dietVal > maxVal) {
-            highestCategory = 'diet';
-            maxVal = dietVal;
-        }
-        if (energyVal > maxVal) {
-            highestCategory = 'energy';
-            maxVal = energyVal;
-        }
-
-        const selectedActions = recommendations[highestCategory];
-        
-        const currentCategoryAttr = dom.displays.actionsContainer.getAttribute('data-category');
-        if (currentCategoryAttr !== highestCategory) {
-            dom.displays.actionsContainer.setAttribute('data-category', highestCategory);
-            dom.displays.actionsContainer.innerHTML = '';
-            
-            selectedActions.forEach(action => {
-                const priorityClass = `badge-${action.priority.toLowerCase()}`;
-                const card = document.createElement('div');
-                card.className = 'action-card';
-                card.innerHTML = `
-                    <div class="action-icon-wrapper" aria-hidden="true">${action.icon}</div>
-                    <div class="action-info">
-                        <div class="action-header">
-                            <span class="action-title">${action.title}</span>
-                            <span class="priority-badge ${priorityClass}">${action.priority}</span>
-                        </div>
-                        <p class="action-desc">${action.desc}</p>
-                        <span class="action-savings">Est. Savings: ${action.savings}</span>
-                    </div>
-                `;
-                dom.displays.actionsContainer.appendChild(card);
+        // 1. Walk or Bike short trips
+        if (state.driving > 30) {
+            const savingsVal = Math.round(state.driving * 0.17 * 52 * 0.3); // 30% savings rate
+            list.push({
+                icon: '🚲',
+                title: 'Walk or Bike Short Trips',
+                desc: `Replacing 30% of your current ${state.driving} km/week driving with walking or cycling offsets fuel consumption directly.`,
+                savings: savingsVal,
+                priority: getPriority(savingsVal)
             });
         }
+
+        // 2. Carpooling and Commuter sharing
+        if (state.driving > 80) {
+            const savingsVal = Math.round(state.driving * 0.17 * 52 * 0.4); // 40% savings rate
+            list.push({
+                icon: '🚍',
+                title: 'Transit & Carpooling Commutes',
+                desc: `Sharing rides or shifting 40% of your commutes to transit routes divides your high vehicle footprint.`,
+                savings: savingsVal,
+                priority: getPriority(savingsVal)
+            });
+        }
+
+        // 3. Flight offsetting or avoidance
+        if (state.flights > 0) {
+            const savingsVal = Math.round(state.flights * 500 * 0.3); // 30% savings
+            list.push({
+                icon: '✈️',
+                title: 'Flight Offsetting & Reduction',
+                desc: `Your annual count of ${state.flights} flights is highly carbon intensive. Offsetting or swapping to high-speed rail cuts this.`,
+                savings: savingsVal,
+                priority: getPriority(savingsVal)
+            });
+        }
+
+        // 4. Plant based dietary transition
+        if (state.meat > 2) {
+            const savingsVal = Math.round(state.meat * 2.5 * 52 * 0.5); // Swap 50%
+            list.push({
+                icon: '🥗',
+                title: 'Increase Plant-Based Meals',
+                desc: `Transitioning half of your ${state.meat} meat meals per week to nutritious plant sources cuts agricultural emissions.`,
+                savings: savingsVal,
+                priority: getPriority(savingsVal)
+            });
+        }
+
+        // 5. Zero Food Waste
+        if (state.foodWaste >= 1) {
+            const wasteCo2 = CO2_FACTORS.foodWaste[state.foodWaste];
+            const savingsVal = Math.round(wasteCo2 * 52 * 0.6); // 60% savings rate
+            const levelStr = state.foodWaste === 1 ? 'Medium' : 'High';
+            list.push({
+                icon: '🗑️',
+                title: 'Minimize Organic Food Waste',
+                desc: `Improving your ${levelStr} waste level via composting and meal planning stops landfills from generating methane.`,
+                savings: savingsVal,
+                priority: getPriority(savingsVal)
+            });
+        }
+
+        // 6. Electricity optimization
+        if (state.electricity > 100) {
+            const savingsVal = Math.round(state.electricity * (0.85 / 4.33) * 52 * 0.15); // 15% reduction
+            list.push({
+                icon: '💡',
+                title: 'Energy Efficient LED & Smart Plugs',
+                desc: `Reducing your electricity consumption of ${state.electricity} kWh/month by 15% drops your energy grid load.`,
+                savings: savingsVal,
+                priority: getPriority(savingsVal)
+            });
+        }
+
+        // 7. Heating system upgrades
+        if (state.heating !== 'biomass') {
+            const heatingCo2 = CO2_FACTORS.heating[state.heating];
+            const biomassCo2 = CO2_FACTORS.heating.biomass;
+            const savingsVal = Math.round((heatingCo2 - biomassCo2) * 52 * 0.5); // 50% upgrade savings
+            const heatLabels = { gas: 'Natural Gas', electric: 'Electric', oil: 'Heating Oil' };
+            list.push({
+                icon: '🌡️',
+                title: 'Upgrade Heating Systems',
+                desc: `Upgrading your current ${heatLabels[state.heating] || state.heating} heater to highly efficient solar thermal or biomass saves half.`,
+                savings: savingsVal,
+                priority: getPriority(savingsVal)
+            });
+        }
+
+        function getPriority(val) {
+            if (val >= 400) return 'High';
+            if (val >= 150) return 'Medium';
+            return 'Low';
+        }
+
+        // Sort descending by savings (Highest impact first)
+        list.sort((a, b) => b.savings - a.savings);
+
+        // Render Top 4 Actions
+        const topActions = list.slice(0, 4);
+        dom.displays.actionsContainer.innerHTML = '';
+        
+        if (topActions.length === 0) {
+            dom.displays.actionsContainer.innerHTML = `
+                <div class="action-card" style="grid-column: 1 / -1; justify-content: center; text-align: center;">
+                    <div class="action-info">
+                        <span class="action-title">✨ Excellent Footprint Status!</span>
+                        <p class="action-desc">Your habits are already highly optimized. Keep up the clean green living!</p>
+                    </div>
+                </div>
+            `;
+            return;
+        }
+
+        topActions.forEach(action => {
+            const priorityClass = `badge-${action.priority.toLowerCase()}`;
+            const card = document.createElement('div');
+            card.className = 'action-card';
+            card.innerHTML = `
+                <div class="action-icon-wrapper" aria-hidden="true">${action.icon}</div>
+                <div class="action-info">
+                    <div class="action-header">
+                        <span class="action-title">${action.title}</span>
+                        <span class="priority-badge ${priorityClass}">${action.priority}</span>
+                    </div>
+                    <p class="action-desc">${action.desc}</p>
+                    <span class="action-savings">Est. Savings: ${action.savings} kg CO₂e/yr</span>
+                </div>
+            `;
+            dom.displays.actionsContainer.appendChild(card);
+        });
     }
 
     // --- LOG CURRENT WEEK ACTION ---
