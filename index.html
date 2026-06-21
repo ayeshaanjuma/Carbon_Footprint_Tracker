@@ -10,6 +10,8 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="index.css">
+    <!-- Google GIS SDK -->
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
 </head>
 <body>
     <div class="glow-bg"></div>
@@ -17,9 +19,22 @@
         
         <!-- HERO SECTION -->
         <header class="hero-section">
-            <div class="hero-brand">
-                <span class="hero-logo">🌱</span>
-                <h1>Carbon Footprint Tracker</h1>
+            <div class="hero-brand-row" style="display: flex; justify-content: space-between; align-items: center; width: 100%; max-width: 1200px; flex-wrap: wrap; gap: 1rem; margin-bottom: 0.5rem;">
+                <div class="hero-brand">
+                    <span class="hero-logo">🌱</span>
+                    <h1>Carbon Footprint Tracker</h1>
+                </div>
+                <!-- AUTH STATUS / BUTTON SECTION -->
+                <div id="auth-container" class="glass-card" style="padding: 0.5rem 1rem; display: flex; align-items: center; gap: 1rem; border-radius: 12px; margin-left: auto;">
+                    <div id="guest-auth-view" style="display: flex; align-items: center; gap: 0.75rem;">
+                        <span style="font-size: 0.85rem; color: var(--text-secondary);">👤 Guest Mode</span>
+                        <div id="google-signin-btn"></div>
+                    </div>
+                    <div id="user-auth-view" class="hidden" style="display: flex; align-items: center; gap: 0.75rem;">
+                        <span id="user-welcome-text" style="font-size: 0.9rem; font-weight: 500; color: var(--text-primary);">Welcome!</span>
+                        <button id="btn-signout" class="btn btn-secondary" style="padding: 0.25rem 0.75rem; font-size: 0.85rem; height: auto;">Sign Out</button>
+                    </div>
+                </div>
             </div>
             <p class="hero-tagline">Track your habits. Understand your impact. Build a greener future.</p>
             

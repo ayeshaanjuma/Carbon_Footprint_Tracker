@@ -1121,7 +1121,108 @@ document.addEventListener('DOMContentLoaded', () => {
         dom.coach.askInput.value = '';
     });
 
+    // --- AUTHENTICATION FLOW ---
+    function initAuth() {
+        const token = localStorage.getItem('auth_token');
+        const userJson = localStorage.getItem('auth_user');
+
+        const guestAuthView = document.getElementById('guest-auth-view');
+        const userAuthView = document.getElementById('user-auth-view');
+        const userWelcomeText = document.getElementById('user-welcome-text');
+        const btnSignout = document.getElementById('btn-signout');
+
+        if (btnSignout) {
+            btnSignout.addEventListener('click', () => {
+                localStorage.removeItem('auth_token');
+                localStorage.removeItem('auth_user');
+                window.location.reload();
+            });
+        }
+
+        if (token && userJson) {
+            try {
+                const user = JSON.parse(userJson);
+                if (guestAuthView) guestAuthView.classList.add('hidden');
+                if (userAuthView) userAuthView.classList.remove('hidden');
+                if (userWelcomeText) userWelcomeText.textContent = `Warrior: ${user.name}`;
+                
+                // Keep gamification UI synced
+                state.xp = user.xp || 0;
+                state.level = user.level || 1;
+            } catch (e) {
+                console.error('Failed to parse authenticated user info', e);
+            }
+        } else {
+            if (guestAuthView) guestAuthView.classList.remove('hidden');
+            if (userAuthView) userAuthView.classList.add('hidden');
+            
+            // Load Google client button
+            if (window.google && window.google.accounts) {
+                window.google.accounts.id.initialize({
+                    client_id: 'your-google-oauth2-client-id.apps.googleusercontent.com',
+                    callback: handleCredentialResponse
+                });
+                const btnContainer = document.getElementById('google-signin-btn');
+                if (btnContainer) {
+                    window.google.accounts.id.renderButton(
+                        btnContainer,
+                        { theme: 'outline', size: 'medium', shape: 'pill', text: 'signin' }
+                    );
+                }
+            } else {
+                setTimeout(initAuth, 1000);
+            }
+        }
+    }
+
+    async function handleCredentialResponse(response) {
+        console.log("Encoded JWT ID token: " + response.credential);
+        
+        const guestData = {
+            weeklyTarget: state.weeklyTarget,
+            history: state.history,
+            streak: state.streak,
+            longestStreak: state.longestStreak,
+            completedChallenges: state.completedChallenges
+        };
+
+        try {
+            const res = await fetch('/api/v1/auth/google', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    token: response.credential,
+                    guestData: guestData
+                })
+            });
+
+            const data = await res.json();
+            if (data.status === 'success') {
+                localStorage.setItem('auth_token', data.data.token);
+                localStorage.setItem('auth_user', JSON.stringify(data.data.user));
+                
+                state.xp = data.data.user.xp;
+                state.level = data.data.user.level;
+                
+                window.location.reload();
+            } else {
+                alert('Authentication failed: ' + data.message);
+            }
+        } catch (err) {
+            console.error('Error during Google Sign-in API call:', err);
+            alert('Unable to authenticate at this time. Please try again later.');
+        }
+    }
+
+    // Expose mock login helper to window for browser verification/tests
+    window.testMockLogin = (email) => {
+        handleCredentialResponse({ credential: 'mock-google-token-' + email });
+    };
+
     // --- INITIALIZATION ---
     loadState();
+    initAuth();
     requestRender();
 });

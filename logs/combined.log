@@ -1,0 +1,17 @@
+{"level":"info","message":"Server successfully started in development mode on port 3000","timestamp":"2026-06-21 00:04:47"}
+{"level":"info","message":"Server successfully started in development mode on port 3000","timestamp":"2026-06-21 00:05:23"}
+{"level":"info","message":"Server successfully started in development mode on port 3000","timestamp":"2026-06-21 00:05:44"}
+{"level":"info","message":"Received shutdown signal. Commencing graceful server stop...","timestamp":"2026-06-21 00:07:03"}
+{"level":"info","message":"Bypassing Google token verification with mock token for email: testwarrior@example.com","timestamp":"2026-06-21 23:07:44"}
+{"level":"info","message":"Creating new user account for testwarrior@example.com via Google sign-in","timestamp":"2026-06-21 23:07:44"}
+{"level":"info","message":"User created successfully: testwarrior@example.com (ID: 1)","timestamp":"2026-06-21 23:07:44"}
+{"level":"info","message":"Commencing guest data migration to User 1...","timestamp":"2026-06-21 23:07:44"}
+{"level":"info","message":"Goals upserted for user 1 (Target: 40 kg, Allowance: 160 kg)","timestamp":"2026-06-21 23:07:44"}
+{"level":"error","message":"Migration of guest data failed for User 1 Cannot read properties of undefined (reading 'id')","stack":"TypeError: Cannot read properties of undefined (reading 'id')\n    at CarbonRecordService.logWeeklyRecord (c:\\Users\\Ayesha\\challenge3\\services\\carbonRecordService.js:35:73)\n    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)\n    at async AuthService.migrateGuestData (c:\\Users\\Ayesha\\challenge3\\services\\authService.js:100:13)\n    at async c:\\Users\\Ayesha\\challenge3\\routes\\auth.js:50:9","timestamp":"2026-06-21 23:07:44"}
+{"level":"error","message":"Failed to migrate guest data for user 1 Cannot read properties of undefined (reading 'id')","stack":"TypeError: Cannot read properties of undefined (reading 'id')\n    at CarbonRecordService.logWeeklyRecord (c:\\Users\\Ayesha\\challenge3\\services\\carbonRecordService.js:35:73)\n    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)\n    at async AuthService.migrateGuestData (c:\\Users\\Ayesha\\challenge3\\services\\authService.js:100:13)\n    at async c:\\Users\\Ayesha\\challenge3\\routes\\auth.js:50:9","timestamp":"2026-06-21 23:07:44"}
+{"level":"info","message":"Bypassing Google token verification with mock token for email: testwarrior@example.com","timestamp":"2026-06-21 23:08:01"}
+{"level":"info","message":"Creating new user account for testwarrior@example.com via Google sign-in","timestamp":"2026-06-21 23:08:01"}
+{"level":"info","message":"User created successfully: testwarrior@example.com (ID: 1)","timestamp":"2026-06-21 23:08:01"}
+{"level":"info","message":"Commencing guest data migration to User 1...","timestamp":"2026-06-21 23:08:01"}
+{"level":"info","message":"Goals upserted for user 1 (Target: 40 kg, Allowance: 160 kg)","timestamp":"2026-06-21 23:08:01"}
+{"level":"info","message":"Guest data successfully migrated to User Account 1.","timestamp":"2026-06-21 23:08:01"}
